@@ -27,7 +27,7 @@ func Run(address string, port string) {
 	options.FontColor = []figlet4go.Color{
 		figlet4go.ColorGreen,
 	}
-	renderStr, _ := ascii.RenderOpts("API-Service!", options)
+	renderStr, _ := ascii.RenderOpts("API-Server!", options)
 	fmt.Print(renderStr)
 
 	logConfig := config.GetLogConfiguration()
@@ -42,21 +42,29 @@ func Run(address string, port string) {
 	sessionRef := sf.GetSession()
 
 	con := config.NewConfigurations(logger)
-	// repository contains all the methods that interact with DB to perform CURD operations for user.
-	repository := reposytory.NewUserRepository(sessionRef, logger)
+
+	// userRepository contains all the methods that interact with DB to perform CURD operations for user.
+	userRepository := reposytory.NewUserRepository(sessionRef, logger)
+	userRepository.GetUserByUserName("admin")
+
+	authRepository := reposytory.NewAuthRepository(sessionRef, logger)
+
+	accountRepository := reposytory.NewAccountRepository(sessionRef, logger)
 
 	// validation contains all the methods that are need to validate the user json in request
 	validator := data2.NewValidation()
 
 	// authService contains all methods that help in authorizing a user request
-	authService := service.NewAuthService(logger, con)
-
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	authService := service.NewAuthService(logger, con, authRepository)
 
 	// AuthHandler encapsulates all the services related to user
-	authHandler := handlers.NewAuthHandler(logger, con, validator, repository, authService)
+	authHandler := handlers.NewAuthHandler(logger, con, validator, userRepository, authService)
+
+	accountHandler := handlers.NewAccountHandler(authHandler, logger, accountRepository)
 
 	authHandler.Routes(router)
+	accountHandler.Routes(router)
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	err := router.Run(fmt.Sprintf("%s:%v", address, port))
 	if err != nil {

@@ -1,19 +1,35 @@
 package utils
 
 import (
-	"math/rand"
-	"strings"
+	"crypto/rand"
+	"math"
+	"math/big"
 )
 
-const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-"
 
 // GenerateRandomString generate a string of random characters of given length
 func GenerateRandomString(n int) string {
-	sb := strings.Builder{}
-	sb.Grow(n)
+	ret := make([]byte, n)
 	for i := 0; i < n; i++ {
-		idx := rand.Int63() % int64(len(letterBytes))
-		sb.WriteByte(letterBytes[idx])
+		num, _ := rand.Int(rand.Reader, big.NewInt(int64(len(letters))))
+		ret[i] = letters[num.Int64()]
 	}
-	return sb.String()
+
+	return string(ret)
+}
+
+// Round returns the nearest fractional number, side-rounded to roundOn
+func Round(val float64, roundOn float64, places int) (newVal float64) {
+	var r float64
+	pow := math.Pow(10, float64(places))
+	digit := pow * val
+	_, div := math.Modf(digit)
+	if div >= roundOn {
+		r = math.Ceil(digit)
+	} else {
+		r = math.Floor(digit)
+	}
+	newVal = r / pow
+	return
 }

@@ -12,6 +12,14 @@ import (
 	"my-bank-service/pkg/session"
 )
 
+// UserRepository is an interface for the storage implementation of the authRepository service
+type UserRepository interface {
+	Create(user *data.User) error
+	GetUserByEmail(email string) (*data.User, error)
+	GetUserByUserName(userName string) (*data.User, error)
+	GetUserByID(userID string) (*data.User, error)
+}
+
 // userRepository has the implementation of the db methods.
 type userRepository struct {
 	session *session.Session
@@ -48,7 +56,7 @@ func (r *userRepository) Create(user *data.User) error {
 		UserID:       user.ID,
 		IntegerPart:  8,
 		FractionPart: 0,
-		Currency:     "USD",
+		Currency:     config.DefCurrency,
 	}
 	bDs := dialect.Insert(config.BalanceTable).Rows(
 		goqu.Record{config.UserId: balance.UserID, config.IntegerPart: balance.IntegerPart,
@@ -105,15 +113,15 @@ func (r *userRepository) GetUserByUserName(userName string) (*data.User, error) 
 		return nil, err
 	}
 	res, err := r.session.Query(sqlStr)
+	if err != nil {
+		return nil, err
+	}
 	defer func() {
 		err = res.Close()
 		if err != nil {
 			r.logger.Error(err)
 		}
 	}()
-	if err != nil {
-		return nil, err
-	}
 	var user data.User
 	if res.Next() {
 		err = res.Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.TokenHash,

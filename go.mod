@@ -8,8 +8,7 @@ require (
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/dariubs/percent v0.0.0-20200128140941-b7801cf1c7e2 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
-	github.com/doug-martin/goqu v5.0.0+incompatible // indirect
-	github.com/doug-martin/goqu/v9 v9.15.1 // indirect
+	github.com/doug-martin/goqu/v9 v9.16.0 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect

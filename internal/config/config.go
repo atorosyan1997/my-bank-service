@@ -18,7 +18,7 @@ const (
 	ServerAddr  = ""
 	ServerPort  = "8080"
 	Driver      = "mysql"
-	DatabaseUrl = "%s:%s@/%s?parseTime=true"
+	DatabaseUrl = "%s:%s@tcp(%s)/%s?parseTime=true"
 
 	LogConfigFileName = "logConfig"
 	ServerConfigPath  = "./properties"
@@ -27,15 +27,18 @@ const (
 
 const (
 	GroupPath        = "/"
-	SignUpPath       = "user/add/"
+	SignUpPath       = "signup"
 	LoginPath        = "login/"
 	LogoutPath       = "logout/"
+	PaymentPath      = "payment/"
 	RefreshTokenPath = "/refresh-token/"
 )
 
 const (
-	UsersTable   = "users"
-	BalanceTable = "balance"
+	UsersTable          = "users"
+	AuthTable           = "auth"
+	BalanceTable        = "balance"
+	PaymentHistoryTable = "payment_history"
 
 	Id        = "id"
 	Email     = "email"
@@ -46,13 +49,21 @@ const (
 	UpdatedAt = "updatedat"
 
 	UserId       = "user_id"
+	AuthUUID     = "auth_uuid"
 	IntegerPart  = "integer_part"
 	FractionPart = "fraction_part"
 	Currency     = "currency"
+
+	BalanceId         = "balance_id"
+	InitialBalance    = "initial_balance"
+	FinalBalance      = "final_balance"
+	DifferenceBalance = "difference_balance"
 )
 
-var instance *logging.Configuration
-var logOnce sync.Once
+const (
+	DefSum      float64 = 1.1
+	DefCurrency string  = "USD"
+)
 
 // Configurations wraps all the configs variables required by the auth service
 type Configurations struct {
@@ -89,6 +100,9 @@ func NewConfigurations(logger logging.Logger) *Configurations {
 	return configs
 }
 
+var instance *logging.Configuration
+var logOnce sync.Once
+
 // GetLogConfiguration reads log configuration from a config file
 func GetLogConfiguration() *logging.Configuration {
 	logOnce.Do(func() {
@@ -118,7 +132,7 @@ func LoadConfig(l logging.Logger) string {
 			l.Logger.Error("An error was generated while reading the database config file.")
 			return
 		}
-		connection = fmt.Sprintf(DatabaseUrl, config.User, config.Passwd, config.DBName)
+		connection = fmt.Sprintf(DatabaseUrl, config.User, config.Passwd, config.Net, config.DBName)
 	})
 	return connection
 }

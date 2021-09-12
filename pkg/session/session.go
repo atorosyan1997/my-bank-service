@@ -12,7 +12,7 @@ type SessionFactory struct {
 	*sql.DB
 }
 
-// Session Сессия сессия
+// Session database session
 type Session struct {
 	db           *sql.DB // Own database
 	tx           *sql.Tx // Own transaction

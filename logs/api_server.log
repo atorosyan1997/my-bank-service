@@ -1,0 +1,8 @@
+{"@timestamp":"2021/09/12 - 18:00:37","func":"app.go:36","level":"info","message":"logger initialized","service":"API-SERVICE"}
+{"@timestamp":"2021/09/12 - 18:00:37","func":"config.go:82","level":"debug","message":"found database url in env, connection string is formed by parsing it","service":"API-SERVICE"}
+{"@timestamp":"2021/09/12 - 18:01:00","func":"middleware.go:48","level":"debug","message":"validating access token","service":"API-SERVICE"}
+{"@timestamp":"2021/09/12 - 18:01:00","func":"middleware.go:56","level":"debug","message":"token present in header","service":"API-SERVICE"}
+{"@timestamp":"2021/09/12 - 18:01:00","func":"middleware.go:60","level":"error","message":"token validation failederrorinvalid token","service":"API-SERVICE"}
+{"@timestamp":"2021/09/12 - 18:01:01","func":"middleware.go:48","level":"debug","message":"validating access token","service":"API-SERVICE"}
+{"@timestamp":"2021/09/12 - 18:01:01","func":"middleware.go:56","level":"debug","message":"token present in header","service":"API-SERVICE"}
+{"@timestamp":"2021/09/12 - 18:01:01","func":"middleware.go:60","level":"error","message":"token validation failederrorinvalid token","service":"API-SERVICE"}

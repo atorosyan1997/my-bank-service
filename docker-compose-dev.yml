@@ -3,10 +3,12 @@ services:
   dev_db:
     image: mysql:8.0.23
     environment:
-      MYSQL_DATABASE: BankServer
-      MYSQL_USER: bankUser
-      MYSQL_PASSWORD: 12345678
+      TZ: Europe/Moscow
+      MYSQL_DATABASE: goxygen
+      MYSQL_USER: goxygen
+      MYSQL_PASSWORD: pass
       MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+    ports:
+      - 3306:3306
     volumes:
       - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
-    network_mode: host

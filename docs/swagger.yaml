@@ -26,8 +26,8 @@ definitions:
 host: localhost:8080
 info:
   contact: {}
-  description: API Server for
-  title: Bank API
+  description: API Server for test task.
+  title: API-Server
   version: "1.0"
 paths:
   /login/:
@@ -64,7 +64,51 @@ paths:
             type: integer
       summary: Login
       tags:
-      - auth
+      - Authorization
+  /logout/:
+    get:
+      consumes:
+      - application/json
+      description: user logout
+      operationId: user-logout
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: integer
+        "500":
+          description: Internal Server Error
+          schema:
+            type: integer
+      security:
+      - ApiKeyAuth: []
+      summary: Logout
+      tags:
+      - Authorization
+  /payment/:
+    get:
+      consumes:
+      - application/json
+      description: balance payment
+      operationId: balance-payment
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: integer
+        "500":
+          description: Internal Server Error
+          schema:
+            type: integer
+      security:
+      - ApiKeyAuth: []
+      summary: payment
+      tags:
+      - Payment
   /refresh-token/:
     get:
       consumes:
@@ -86,8 +130,8 @@ paths:
       - ApiKeyAuth: []
       summary: RefreshToken
       tags:
-      - auth
-  /user/add/:
+      - Inner_Handlers
+  /signup/:
     post:
       consumes:
       - application/json
@@ -115,9 +159,11 @@ paths:
           description: Internal Server Error
           schema:
             type: integer
+      security:
+      - ApiKeyAuth: []
       summary: Signup
       tags:
-      - auth
+      - Inner_Handlers
 securityDefinitions:
   ApiKeyAuth:
     in: header

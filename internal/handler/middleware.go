@@ -24,7 +24,6 @@ func (ah *AuthHandler) MiddlewareValidateUser(ctx *gin.Context) {
 		_ = data.ToJSON(&GenericResponse{Status: false, Message: err.Error()}, ctx.Writer)
 		return
 	}
-
 	// validate the user
 	errs := ah.validator.Validate(user)
 	if len(errs) != 0 {
@@ -56,7 +55,7 @@ func (ah *AuthHandler) MiddlewareValidateAccessToken(ctx *gin.Context) {
 	}
 	ah.logger.Debug("token present in header")
 
-	userID, err := ah.authService.ValidateAccessToken(token)
+	userID, authUUID, err := ah.authService.ValidateAccessToken(token)
 	if err != nil {
 		ah.logger.Error("token validation failed", "error", err)
 		ctx.AbortWithStatus(http.StatusBadRequest)
@@ -65,11 +64,23 @@ func (ah *AuthHandler) MiddlewareValidateAccessToken(ctx *gin.Context) {
 	}
 	ah.logger.Debug("access token validated")
 
-	ctx.Request = ctx.Request.WithContext(context.WithValue(ctx.Request.Context(), UserIDKey{}, userID))
+	user, err := ah.repo.GetUserByID(userID)
+	if err != nil {
+		ah.logger.Error("invalid token: wrong userID while parsing", err)
+		ctx.AbortWithStatus(http.StatusBadRequest)
+		_ = data.ToJSON(&GenericResponse{Status: false, Message: "Unable to fetch corresponding user"}, ctx.Writer)
+		return
+	}
+
+	authUser := data.AuthUser{
+		User:     *user,
+		AuthUUID: authUUID,
+	}
+	// add the user to the context
+	ctx.Request = ctx.Request.WithContext(context.WithValue(ctx.Request.Context(), UserAuthKey{}, authUser))
 
 	// call the next handler
 	ctx.Next()
-
 }
 
 // MiddlewareValidateRefreshToken validates whether the request contains a bearer token
@@ -89,7 +100,7 @@ func (ah *AuthHandler) MiddlewareValidateRefreshToken(ctx *gin.Context) {
 	}
 	ah.logger.Debug("token present in header", token)
 
-	userID, customKey, err := ah.authService.ValidateRefreshToken(token)
+	userID, authUUID, customKey, err := ah.authService.ValidateRefreshToken(token)
 	if err != nil {
 		ah.logger.Error("token validation failed", "error", err)
 		ctx.AbortWithStatus(http.StatusBadRequest)
@@ -114,8 +125,12 @@ func (ah *AuthHandler) MiddlewareValidateRefreshToken(ctx *gin.Context) {
 		return
 	}
 
+	authUser := data.AuthUser{
+		User:     *user,
+		AuthUUID: authUUID,
+	}
 	// add the user to the context
-	ctx.Request = ctx.Request.WithContext(context.WithValue(ctx.Request.Context(), UserKey{}, *user))
+	ctx.Request = ctx.Request.WithContext(context.WithValue(ctx.Request.Context(), UserAuthKey{}, authUser))
 
 	// call the next handler
 	ctx.Next()

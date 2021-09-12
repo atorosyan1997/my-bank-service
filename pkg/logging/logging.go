@@ -5,7 +5,6 @@ import (
 	"github.com/mattn/go-colorable"
 	"github.com/sirupsen/logrus"
 	"github.com/snowzach/rotatefilehook"
-	"io"
 	"os"
 	"path"
 	"runtime"
@@ -15,36 +14,11 @@ const (
 	ServiceHider    = "API-SERVICE"
 	LogDir          = "logs"
 	DirPermission   = 0777
-	FileName        = "api_service"
+	FileName        = "api_server"
 	TimeFieldKey    = "@timestamp"
 	MessageFieldKey = "message"
 	FileFieldKey    = "service"
 )
-
-// writerHook is a hook that writes logs of specified LogLevels to specified Writer
-type writerHook struct {
-	Writer    []io.Writer
-	LogLevels []logrus.Level
-	Formatter logrus.Formatter
-}
-
-// Fire will be called when some logging function is called with current hook
-// It will format log entry to string and write it to appropriate writer
-func (hook *writerHook) Fire(entry *logrus.Entry) error {
-	line, err := entry.String()
-	if err != nil {
-		return err
-	}
-	for _, w := range hook.Writer {
-		_, err = w.Write([]byte(line))
-	}
-	return err
-}
-
-// Levels define on which log levels this hook would trigger
-func (hook *writerHook) Levels() []logrus.Level {
-	return hook.LogLevels
-}
 
 type Configuration struct {
 	Filename               string       `yaml:"fileName" json:"file_name"`

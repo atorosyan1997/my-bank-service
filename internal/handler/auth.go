@@ -27,11 +27,8 @@ var (
 // UserKey is used as a key for storing the User object in context at middleware
 type UserKey struct{}
 
-// UserIDKey is used as a key for storing the UserID in context at middleware
-type UserIDKey struct{}
-
-// VerificationDataKey is used as the key for storing the VerificationData in context at middleware
-type VerificationDataKey struct{}
+// UserAuthKey is used as a key for storing the User and AuthUUID in context at middleware
+type UserAuthKey struct{}
 
 // AuthHandler wraps instances needed to perform operations on user object
 type AuthHandler struct {
@@ -59,7 +56,12 @@ func (ah *AuthHandler) Routes(engine *gin.Engine) {
 		user.Use(ah.MiddlewareValidateUser)
 		user.POST(config.LoginPath, ah.Login)
 		user.POST(config.SignUpPath, ah.Signup)
-		user.Use(ah.MiddlewareValidateAccessToken)
+	}
+
+	accessTok := engine.Group(config.GroupPath)
+	{
+		accessTok.Use(ah.MiddlewareValidateAccessToken)
+		accessTok.GET(config.LogoutPath, ah.Logout)
 	}
 
 	refToken := engine.Group(config.RefreshTokenPath)
@@ -94,24 +96,9 @@ type AuthResponse struct {
 	Username     string `json:"username"`
 }
 
-type UsernameUpdate struct {
-	Username string `json:"username"`
-}
-
-type CodeVerificationReq struct {
-	Code string `json:"code"`
-	Type string `json:"type"`
-}
-
-type PasswordResetReq struct {
-	NewPassword   string `json:"new_password"`
-	NewPasswordRe string `json:"new_password_re"`
-	OldPassword   string `json:"old_password"`
-}
-
 // Login handles login request
 // @Summary Login
-// @Tags auth
+// @Tags Authorization
 // @Description user login
 // @ID user-login
 // @Accept json
@@ -121,7 +108,6 @@ type PasswordResetReq struct {
 // @Failure 400,404,500 {integer} integer 2
 // @Router /login/ [post]
 func (ah *AuthHandler) Login(ctx *gin.Context) {
-
 	ctx.Set("Content-Type", "application/json")
 
 	reqUser := ctx.Request.Context().Value(UserKey{}).(data2.User)
@@ -146,16 +132,8 @@ func (ah *AuthHandler) Login(ctx *gin.Context) {
 		return
 	}
 
-	accessToken, err := ah.authService.GenerateAccessToken(user)
+	accessToken, refreshToken, err := ah.authService.GenerateTokens(user)
 	if err != nil {
-		ah.logger.Error("unable to generate access token", "error", err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
-		_ = data2.ToJSON(&GenericResponse{Status: false, Message: "Unable to login the user. Please try again later"}, ctx.Writer)
-		return
-	}
-	refreshToken, err := ah.authService.GenerateRefreshToken(user)
-	if err != nil {
-		ah.logger.Error("unable to generate refresh token", "error", err)
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		_ = data2.ToJSON(&GenericResponse{Status: false, Message: "Unable to login the user. Please try again later"}, ctx.Writer)
 		return
@@ -170,9 +148,44 @@ func (ah *AuthHandler) Login(ctx *gin.Context) {
 	}, ctx.Writer)
 }
 
+// Logout handles logout request
+// @Summary Logout
+// @Tags Authorization
+// @Security ApiKeyAuth
+// @Description user logout
+// @ID user-logout
+// @Accept json
+// @Produce json
+// @Success 200 {integer} integer 1
+// @Failure 500 {integer} integer 2
+// @Router /logout/ [get]
+func (ah *AuthHandler) Logout(ctx *gin.Context) {
+	ctx.Set("Content-Type", "application/json")
+	authUser := ctx.Request.Context().Value(UserAuthKey{}).(data2.AuthUser)
+	authD := &data2.AuthDetails{
+		UserId:   authUser.User.ID,
+		AuthUuid: authUser.AuthUUID,
+	}
+	err := ah.authService.InvalidateTokens(authD)
+	if err != nil {
+		ah.logger.Error("unable to logout", "error", err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		_ = data2.ToJSON(&GenericResponse{Status: false, Message: "Unable to logout.Please try again later"}, ctx.Writer)
+		return
+	}
+
+	ctx.AbortWithStatus(http.StatusOK)
+	_ = data2.ToJSON(&GenericResponse{
+		Status:  true,
+		Message: "Successfully logout",
+	}, ctx.Writer)
+
+}
+
 // Signup handles signup request
 // @Summary Signup
-// @Tags auth
+// @Tags Inner_Handlers
+// @Security ApiKeyAuth
 // @Description create user
 // @ID create-user
 // @Accept json
@@ -180,7 +193,7 @@ func (ah *AuthHandler) Login(ctx *gin.Context) {
 // @Param input body swagger.UserSignUp true "signup user"
 // @Success 201 {integer} integer 1
 // @Failure 400,500 {integer} integer 2
-// @Router /user/add/ [post]
+// @Router /signup/ [post]
 func (ah *AuthHandler) Signup(ctx *gin.Context) {
 	ctx.Set("Content-Type", "application/json")
 
@@ -217,7 +230,7 @@ func (ah *AuthHandler) Signup(ctx *gin.Context) {
 // RefreshToken handles refresh token request
 // @Summary RefreshToken
 // @Security ApiKeyAuth
-// @Tags auth
+// @Tags Inner_Handlers
 // @Description refresh token
 // @ID ref-token
 // @Accept json
@@ -228,8 +241,12 @@ func (ah *AuthHandler) Signup(ctx *gin.Context) {
 func (ah *AuthHandler) RefreshToken(ctx *gin.Context) {
 	ctx.Set("Content-Type", "application/json")
 
-	user := ctx.Request.Context().Value(UserKey{}).(data2.User)
-	accessToken, err := ah.authService.GenerateAccessToken(&user)
+	authUser := ctx.Request.Context().Value(UserAuthKey{}).(data2.AuthUser)
+	authD := &data2.AuthDetails{
+		UserId:   authUser.User.ID,
+		AuthUuid: authUser.AuthUUID,
+	}
+	accessToken, err := ah.authService.GenerateAccessToken(authD)
 	if err != nil {
 		ah.logger.Error("unable to generate access token", "error", err)
 		ctx.AbortWithStatus(http.StatusInternalServerError)

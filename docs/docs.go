@@ -33,7 +33,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "auth"
+                    "Authorization"
                 ],
                 "summary": "Login",
                 "operationId": "user-login",
@@ -76,6 +76,76 @@ var doc = `{
                 }
             }
         },
+        "/logout/": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "user logout",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authorization"
+                ],
+                "summary": "Logout",
+                "operationId": "user-logout",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                }
+            }
+        },
+        "/payment/": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "balance payment",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payment"
+                ],
+                "summary": "payment",
+                "operationId": "balance-payment",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                }
+            }
+        },
         "/refresh-token/": {
             "get": {
                 "security": [
@@ -91,7 +161,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "auth"
+                    "Inner_Handlers"
                 ],
                 "summary": "RefreshToken",
                 "operationId": "ref-token",
@@ -111,8 +181,13 @@ var doc = `{
                 }
             }
         },
-        "/user/add/": {
+        "/signup/": {
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "create user",
                 "consumes": [
                     "application/json"
@@ -121,7 +196,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "auth"
+                    "Inner_Handlers"
                 ],
                 "summary": "Signup",
                 "operationId": "create-user",
@@ -219,8 +294,8 @@ var SwaggerInfo = swaggerInfo{
 	Host:        "localhost:8080",
 	BasePath:    "/",
 	Schemes:     []string{},
-	Title:       "Bank API",
-	Description: "API Server for",
+	Title:       "API-Server",
+	Description: "API Server for test task.",
 }
 
 type s struct{}

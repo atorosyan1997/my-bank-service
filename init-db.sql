@@ -18,6 +18,22 @@ USE `BankServer`;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+-- Table structure for table `auth`
+--
+
+DROP TABLE IF EXISTS `auth`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `auth` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` varchar(36) NOT NULL,
+  `auth_uuid` varchar(36) NOT NULL,
+  UNIQUE KEY `access_auth_id_uindex` (`id`),
+  UNIQUE KEY `access_auth_auth_uuid_uindex` (`auth_uuid`)
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `balance`
 --
 
@@ -32,7 +48,7 @@ CREATE TABLE `balance` (
   `currency` varchar(20) NOT NULL,
   UNIQUE KEY `balance_id_uindex` (`id`),
   UNIQUE KEY `balance_user_id_uindex` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -41,9 +57,27 @@ CREATE TABLE `balance` (
 
 LOCK TABLES `balance` WRITE;
 /*!40000 ALTER TABLE `balance` DISABLE KEYS */;
-INSERT INTO `balance` VALUES (1,'801cec9a-d37b-4471-ad7e-1ae6be8105ab',8,0,'USD');
+INSERT INTO `balance` VALUES (1,'ad987de7-a5cd-400c-ae4a-9eeb52fdf3a8',8,0,'USD');
 /*!40000 ALTER TABLE `balance` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `payment_history`
+--
+
+DROP TABLE IF EXISTS `payment_history`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `payment_history` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `balance_id` int(11) NOT NULL,
+  `createdat` varchar(100) NOT NULL,
+  `initial_balance` double NOT NULL,
+  `final_balance` double NOT NULL,
+  `difference_balance` double NOT NULL,
+  UNIQUE KEY `payment_history_id_uindex` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `users`
@@ -58,8 +92,8 @@ CREATE TABLE `users` (
   `email` varchar(100) DEFAULT NULL,
   `password` varchar(255) NOT NULL,
   `tokenhash` varchar(45) DEFAULT NULL,
-  `createdat` varchar(100) NOT NULL,
   `updatedat` varchar(100) DEFAULT NULL,
+  `createdat` varchar(100) NOT NULL,
   UNIQUE KEY `users_userName_uindex` (`userName`),
   UNIQUE KEY `users_email_uindex` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -71,7 +105,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES ('801cec9a-d37b-4471-ad7e-1ae6be8105ab','admin','admin@gmail.com','$2a$10$eQ/SfPwuMuBwdYfkP304lepk.nPlnZ5NpEKyihIF/Z9unOi76w0yG','oJnNPGsiuzytMOJ','2021-09-10 15:46:33','2021-09-10 15:46:33');
+INSERT INTO `users` VALUES ('ad987de7-a5cd-400c-ae4a-9eeb52fdf3a8','admin','admin@gmail.com','$2a$10$Ulut9JhzFjsCj57k/H57juM8dr25.k61xLNpPxLoOaL36EavOFgH.','2r56EcjTEmkWzHr','2021-09-10 23:33:14','2021-09-10 22:17:29');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -84,4 +118,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-09-10 15:48:44
+-- Dump completed on 2021-09-12 14:04:57
