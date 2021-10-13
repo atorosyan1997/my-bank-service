@@ -24,7 +24,7 @@ pipeline {
             }
         }
 
-        stage('Test') {
+        /*stage('Test') {
             steps {
                 withEnv(["PATH+GO=${GOPATH}/bin"]){
                     echo 'Running vetting'
@@ -35,7 +35,7 @@ pipeline {
                     sh 'cd test && go test -v'
                 }
             }
-        }
+        }*/
         
     }
     post {
